@@ -39,31 +39,8 @@ public class InvoiceService {
             
          if (invoice.getInvoiceNo() == null || invoice.getInvoiceNo().isEmpty()) {
              
-             // 1. Prefix banao (e.g., #INV-2026-APR-)
-             String year = String.valueOf(LocalDate.now().getYear());
-             String month = LocalDate.now().getMonth().name().substring(0, 3).toUpperCase();
-             String prefix = "#INV-" + year + "-" + month + "-";
-
-             // 2. SQL se aakhri invoice dhundo (Source of Truth)
-             adminInvoiceModel lastInvoice = sqlRepo.findTopByInvoiceNoStartingWithOrderByInvoiceNoDesc(prefix);
+        	 invoice.setInvoiceNo(generateNextInvoiceNo());             
              
-             // 3. Agar SQL mein na mile toh Mongo se dhundo
-             if (lastInvoice == null) {
-                 lastInvoice = mongoRepo.findFirstByInvoiceNoStartingWithOrderByInvoiceNoDesc(prefix);
-             }
-             
-             // 4. Sequence logic
-             int nextNumber = 1;
-             if (lastInvoice != null) {
-                 String lastNo = lastInvoice.getInvoiceNo();
-                 // Prefix ke baad ka hissa nikaalo (0001)
-                 String lastSeq = lastNo.substring(prefix.length()); 
-                 nextNumber = Integer.parseInt(lastSeq) + 1;
-             }
-             
-             // 5. Final Format: #INV-2026-APR-0001
-             String newInvoiceNo = prefix + String.format("%04d", nextNumber);
-             invoice.setInvoiceNo(newInvoiceNo);
          }
 
             // 3. 🔴 STATUS DEFAULT
@@ -147,5 +124,28 @@ public class InvoiceService {
     public void deleteInvoice(Long id) {
         try { sqlRepo.deleteById(id); } catch (Exception e) { System.err.println("SQL Delete Error"); }
         try { mongoRepo.deleteById(id); } catch (Exception e) { System.err.println("Mongo Delete Error"); }
+    }
+    
+    // ==========================================
+    //   🔴 AUTO-INVOICE NUMBER (Sequential Logic)
+    // ==========================================
+       
+    public String generateNextInvoiceNo() {
+        String year = String.valueOf(LocalDate.now().getYear());
+        String month = LocalDate.now().getMonth().name().substring(0, 3).toUpperCase();
+        String prefix = "#INV-" + year + "-" + month + "-";
+
+        adminInvoiceModel lastInvoice = sqlRepo.findTopByInvoiceNoStartingWithOrderByInvoiceNoDesc(prefix);
+        if (lastInvoice == null) {
+            lastInvoice = mongoRepo.findFirstByInvoiceNoStartingWithOrderByInvoiceNoDesc(prefix);
+        }
+
+        int nextNumber = 1;
+        if (lastInvoice != null) {
+            String lastNo = lastInvoice.getInvoiceNo();
+            String lastSeq = lastNo.substring(prefix.length());
+            nextNumber = Integer.parseInt(lastSeq) + 1;
+        }
+        return prefix + String.format("%04d", nextNumber);
     }
 }
