@@ -13,7 +13,8 @@ public class adminRoleModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long adminId; // Kis Admin ne ye Role banaya
+    private Long adminId;   // Kis Admin ne banaya
+    private Long agencyId;  // ✅ NAYA: Agency Role ke liye — kis agency ka role he (ADMIN role me null hoga)
 
     // "ADMIN" ya "AGENCY" — dono alag tables me dikhenge
     private String roleType;
@@ -42,6 +43,9 @@ public class adminRoleModel {
 
     public Long getAdminId() { return adminId; }
     public void setAdminId(Long adminId) { this.adminId = adminId; }
+
+    public Long getAgencyId() { return agencyId; }
+    public void setAgencyId(Long agencyId) { this.agencyId = agencyId; }
 
     public String getRoleType() { return roleType; }
     public void setRoleType(String roleType) { this.roleType = roleType; }
