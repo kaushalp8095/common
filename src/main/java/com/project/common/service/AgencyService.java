@@ -138,6 +138,26 @@ public class AgencyService {
         }
     }
 
+    
+ // =====================================================
+    // YE METHOD AgencyService.java me add karo
+    // existing "getAllAgenciesForTable" method ke BAAD
+    // =====================================================
+
+        // Subscription controller ke liye — full agency objects chahiye (plan + status)
+        public List<adminAddAgenciesModel> getAgenciesByAdminId(Long adminId) {
+            try {
+                List<adminAddAgenciesModel> list = sqlRepo.findByAdminId(adminId);
+                if (list != null && !list.isEmpty()) return list;
+                return mongoRepo.findByAdminId(adminId);
+            } catch (Exception e) {
+                System.err.println("❌ SQL failed, MongoDB fallback: " + e.getMessage());
+                return mongoRepo.findByAdminId(adminId);
+            }
+        }
+    
+    
+    
     // ==========================================
     // LOGIN HISTORY LOGIC
     // ==========================================
@@ -196,4 +216,6 @@ public class AgencyService {
             System.err.println("❌ MongoDB Delete Error: " + e.getMessage());
         }
     }
+    
+ 
 }
